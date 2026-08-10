@@ -1,0 +1,24 @@
+{
+  "log": {
+    "access": "/dev/null",
+    "loglevel": "error"
+  },
+  "inbounds": [
+    {
+      "port": 10800,
+      "listen": "0.0.0.0",
+      "protocol": "socks",
+      "settings": {
+        "udp": true
+      },
+      "sniffing": {
+        "enabled": true,
+        "destOverride": ["http", "tls", "quic"]
+      }
+    }
+  ],
+  "routing": {
+    "domainStrategy": "AsIs",
+    "rules": []
+  }
+}
