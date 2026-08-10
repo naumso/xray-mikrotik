@@ -12,6 +12,14 @@
 
 В репозитории есть инструкция по использованию [готового](https://hub.docker.com/r/naumso/docker-xray-vless) контейнера и всё необходимое для самостоятельной сборки (`Dockerfile`, `Makefile`, каталог `scripts`). Образ собирается сразу под три архитектуры — **ARM, ARM64 и x86**.
 
+:whale: **Официальный образ:** [hub.docker.com/r/naumso/docker-xray-vless](https://hub.docker.com/r/naumso/docker-xray-vless)
+
+В RouterOS он подключается параметром `remote-image=naumso/docker-xray-vless:latest`, вручную скачивается как:
+```
+docker pull naumso/docker-xray-vless:latest
+```
+Кроме `:latest` публикуются теги по версии Xray, например `:26.7.28` — их удобно использовать, чтобы зафиксировать версию.
+
 ------------
 
 * [Преднастройка RouterOS](#Pre_edit)
