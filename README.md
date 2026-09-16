@@ -261,7 +261,7 @@ add key=URL list=xray value=https://xray.example.com:20443/sub/fwefegewg
 | **IGNORE_RFC_PRIVATE_NETS** | не задан     | если `1` — приватные сети RFC1918 тоже идут через VPN        |
 | **TUN_IP**                  | 172.31.200.10| адрес tun-интерфейса внутри контейнера, без маски (`/30` добавляется сам) |
 | **SOCKS_PORT**              | 10800        | порт локального SOCKS5 инбаунда xray                         |
-| **XRAY_XMUX**               | —            | JSON настроек мультиплексирования для xhttp                  |
+| **XRAY_XMUX**               | —            | JSON xmux для xhttp, перекрывает значение из ссылки; обычно не нужен, 3x-ui отдаёт xmux сам. `maxConnections` и `maxConcurrency` вместе Xray не принимает |
 
 7) Теперь создадим сам контейнер. Образ [naumso/docker-xray-vless](https://hub.docker.com/r/naumso/docker-xray-vless) собран сразу под три архитектуры (arm, arm64, amd64) — RouterOS скачает нужную сам. Не создавайте заранее каталог для параметра "root-dir".
 

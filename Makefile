@@ -1,4 +1,4 @@
-XRAY_VERSION=26.7.28
+XRAY_VERSION=26.9.9
 
 # Переменные окружения для локальной разработки.
 #   .env       — общие значения для всех (можно коммитить)
@@ -8,7 +8,7 @@ XRAY_VERSION=26.7.28
 #   PRIVATE_REPO=harbor.example.ru/routeros
 #   DOCKERHUB_REPO=myuser
 #   TEST_URL=https://example.com/sub/fwu3923fsife
-#   TEST_XRAY_XMUX={"maxConcurrency":16,"maxConnections":8}
+#   TEST_XRAY_XMUX={"maxConnections":8}   (maxConnections и maxConcurrency вместе Xray не принимает)
 #   SOCKS_PORT=10800
 #   TUN_IP=172.31.200.10
 -include .env
@@ -32,7 +32,7 @@ ENV_FILE_ARGS := $(foreach f,$(wildcard .env) $(wildcard .env.local),--env-file 
 
 # TEST_XRAY_XMUX задаётся в .env / .env.local и уходит в контейнер как XRAY_XMUX
 # (см. цель test). Значения по умолчанию нет: если не задан, XRAY_XMUX будет пустым,
-# и генераторы конфига подставят "xmux": null, т.е. мультиплексирование выключено.
+# и xmux берётся из ссылки (extra) или из дефолтов ядра Xray.
 
 
 build-to-file-arm64:

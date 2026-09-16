@@ -9,6 +9,8 @@ log_info "Saving config TROJAN ${XRAY_TYPE} ${XRAY_SECURITY} to ${XRAY_CONFIG_FI
 
 require_vars "XRAY_TYPE XRAY_SECURITY SERVER_ADDRESS XRAY_ID XRAY_FP XRAY_SNI XRAY_PATH XRAY_MODE"
 
+# Если задан "extra", Xray берёт его целиком, а с верхнего уровня xhttpSettings
+# оставляет только host/path/mode. Поэтому xmux кладём внутрь extra.
 render_config \
   --arg type "$XRAY_TYPE" \
   --arg sec "$XRAY_SECURITY" \
@@ -17,9 +19,11 @@ render_config \
   --arg id "$XRAY_ID" \
   --arg fp "$XRAY_FP" \
   --arg sni "$XRAY_SNI" \
+  --arg alpn "${XRAY_ALPN:-}" \
+  --arg ech "${XRAY_ECH:-}" \
   --arg path "$XRAY_PATH" \
   --arg mode "$XRAY_MODE" \
-  --arg xpb "${XRAY_X_PADDING_BYTES:-}" \
+  --arg xpb "${XRAY_X_PADDING_BYTES:-100-1000}" \
   --arg host "${XRAY_HOST:-}" \
   --argjson extra "${XRAY_EXTRA:-null}" \
   --argjson xmux "${XRAY_XMUX:-null}" \
@@ -38,6 +42,8 @@ render_config \
       "streamSettings" : {
         "tlsSettings" : {
           "serverName" : $sni,
+          "alpn" : (if $alpn == "" then null else ($alpn | split(",")) end),
+          "echConfigList" : $ech,
           "enableSessionResumption" : true,
           "rejectUnknownSni" : true,
           "disableSystemRoot" : false,
@@ -49,9 +55,9 @@ render_config \
           "path" : $path,
           "mode" : $mode,
           "host" : $host,
-          "x_padding_bytes" : $xpb,
-          "extra": $extra,
-          "xmux": $xmux
+          "xPaddingBytes" : $xpb,
+          "extra": (if $xmux == null then $extra
+                    else ($extra // {"xPaddingBytes": $xpb}) + {"xmux": $xmux} end)
         },
         "network" : $type
       },

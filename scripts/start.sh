@@ -180,8 +180,12 @@ cleanup() {
         ADDED_ROUTES=""
     fi
 
-    # 4. Restore the original default route if it is now missing
+    # 4. Fail closed: restore the original default route so the next init()
+    #    can find the gateway, but shadow it with two /1 blackholes (more
+    #    specific than default) so client traffic never goes out directly.
     if [ -n "$ORIG_GATEWAY_IP" ] && [ -n "$ORIG_NET_IFACE" ]; then
+        ip route add blackhole 0.0.0.0/1 2>/dev/null
+        ip route add blackhole 128.0.0.0/1 2>/dev/null
         _gw_re=$(printf '%s' "$ORIG_GATEWAY_IP" | sed 's/\./\\./g')
         if ! ip route show default 2>/dev/null | grep -qE "via ${_gw_re}( |$)"; then
             log_info "Restoring original default route via $ORIG_GATEWAY_IP..."
@@ -223,10 +227,13 @@ main() {
 
     # If URL is a subscription URL, fetch the actual URL
     if echo "$URL" | grep -q "^http"; then
-        urls=$(curl -sfL "$URL" | base64 -d)
+        log_info "Fetching subscription..."
+        # Без таймаута curl висит молча, если у контейнера нет DNS/NAT,
+        # и RouterOS убивает его по health check без единой строки в логе.
+        urls=$(curl -sfL --connect-timeout 10 --max-time 30 "$URL" | base64 -d)
 
         if [ -z "$urls" ]; then
-            log_error "Invalid subscription URL. Can\`t get vless config"
+            log_error "Invalid subscription URL or it is unreachable from the container (check dns= and NAT). Can\`t get vless config"
             return 1
         fi
     else
@@ -272,6 +279,10 @@ init() {
 
     url=$1
     name=$2
+
+    # Снять fail-closed от предыдущей итерации: дальше нужен рабочий резолв.
+    ip route del blackhole 0.0.0.0/1 2>/dev/null
+    ip route del blackhole 128.0.0.0/1 2>/dev/null
 
     export XRAY_PROTO=$(echo "$url" | cut -d':' -f1)
 
